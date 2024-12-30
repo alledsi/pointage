@@ -1,0 +1,103 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<div class="row alert bg bg-success text-white">
+  <div class="col-sm-6">
+    <h3>{{d}} &nbsp; {{hm}}</h3>
+  </div>
+  <div class="col-sm-6">
+    <h3 class="d-flex flex-row-reverse">{{request.user.first_name}} {{request.user.last_name}}</h3>
+  </div>
+</div>
+&nbsp;
+<div class="row mb-3 mt-3">
+  <div class="col-sm-7">
+    <div class="row">
+      <div class="col-sm-1"></div>
+      <div class="col-sm-5">
+        <div class="card">
+          <div class="card-header text-center h5 alert alert-success">
+              Statut aujourd'hui
+          </div>
+          <div class="card-body">
+            <p class="card-text h6">- {{statut}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-5">
+        <div class="card">
+          <div class="card-header text-center h5 alert alert-success">
+              Statut hier
+          </div>
+          <div class="card-body">
+            <p class="card-text h6">- {{statutH}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    &nbsp;
+    <div class="row">
+      <div class="col-sm-1"></div>
+      <div class="col-sm-5">
+        <div class="card">
+          <div class="card-header text-center h5 alert alert-success">
+              Cette semaine
+          </div>
+          <div class="card-body">
+            <p class="card-text h6">- {{hweek}}</p>
+            <p class="card-text h6">- {{nd}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-5">
+        <div class="card">
+          <div class="card-header text-center h5 alert alert-success">
+              Ce mois
+          </div>
+          <div class="card-body">
+            <p class="card-text h6">- {{hmois}}</p>
+            <p class="card-text h6">- {{nday}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card">
+      <div class="card-header text-center h5 alert alert-success">
+          Pointage de la journée
+      </div>
+      <div class="card-body text-center">
+        {% if p %}
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Arrivée</p></button>
+          <p>Déjà pointé, {{p.0.locarrivee}} !</p>
+        {% else %}
+        <form action="{% url 'arrivee' %}" method="post" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre arrivée ?');">
+          {% csrf_token %}
+            <p class="h5"><input type="submit" class="btn btn-lg btn-outline-success rounded-pill" value="Arrivée"></p>
+            <p>Pas encore pointé !</p>
+        </form>
+        {% endif %}
+        <br>
+        {% if dep%}
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
+          <p>Déjà pointé, {{p.0.locarrivee}} !</p>
+        {% else %}
+          {% if p %}
+            <form action="{% url 'depart' p.0.id %}" method="post" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre départ ?');">
+              {% csrf_token %}
+                <p class="h5"><input type="submit" class="btn btn-lg btn-outline-success rounded-pill" value="Départ"></p>
+                <p>Pas encore pointé !</p>
+            </form>
+          {% else %}
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
+          <p class="text-danger">Pointez votre arrivée d'abord !</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<br><br>
+
+{% endblock content %}

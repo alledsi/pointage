@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage</title>
+    <link rel="stylesheet" href="{% static 'app/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/style.css' %}">
+    <script>
+      function refresh(time){
+        setTimeout(function () { window.location.reload(); }, time*1000);
+      }
+      refresh(60);
+    </script>
+</head>
+<body>
+    {% if request.resolver_match.url_name == 'login' %}
+    {% else %}
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'accueil' %}">Pointage</a>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'pannee' %}">Cette année</a>
+              </li>
+              &nbsp;
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'pmois' %}">Ce mois</a>
+              </li>
+              &nbsp;
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'psemaine' %}">Cette semaine</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="d-flex flex-row-reverse">
+            <a href="{% url 'logout' %}"><button type="button" class="btn btn-outline-danger btn-sm me-3">Déconnexion</button></a>
+            <h5>Bienvenue&nbsp;&nbsp;</h5>
+        </div>
+      </nav>
+    <div class="container mt-3">
+      &nbsp;
+    {% endif %}
+        {% block content %} {% endblock content %}
+    </div>
+    <script src="{% static 'app/js/jquery.js' %}"></script>
+    <script src="{% static 'app/js/bootstrap.js' %}"></script>
+    <script src="{% static 'app/js/popper.js' %}"></script>
+    <!-- Footer -->
+    {% if request.resolver_match.url_name == 'login' %}
+    {% else %}
+    <footer class="bg-success text-center text-white mt-3">
+        <!-- Grid container -->
+        <div class="container p-4"></div>
+        <!-- Grid container -->
+    
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2)">© 2025 Copyright: ACEP Sénégal</div>
+        <!-- Copyright -->
+    </footer>
+    {% endif %}
+    <!-- Footer -->
+</body>
+</html>

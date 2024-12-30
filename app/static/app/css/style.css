@@ -1,0 +1,30 @@
+
+  .table-fixed{
+    width: 100%;
+    background-color: white;
+    tbody{
+      height:400px;
+      overflow-y:auto;
+      width: 100%;
+      }
+    thead,tbody,tr,td,th{
+      display:block;
+    }
+    tbody{
+        
+      td{
+        height: 45px;
+        float:left;
+      }
+    }
+    thead {
+      tr{
+        
+        th{
+          float:left;
+         
+        }
+      }
+    }
+  }
+  
