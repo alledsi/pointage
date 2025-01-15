@@ -7,8 +7,7 @@ from .models import pointage
 from time import strftime, gmtime
 import datetime
 from django.contrib.auth.decorators import login_required
-import socket
-from django.contrib.auth.models import User
+
 # Create your views here.
 
 sites = {
@@ -281,7 +280,7 @@ def psemaine(request):
     return render(request, 'app/p_semaine.html', {'ps': ps, 'd': dn, 'hm': hm})
 
 def json_pointage(request):
-    data = list(pointage.objects.all().values('date', 'matricule', 'agent', 'arrivee', 'pcarrivee', 'locarrivee', 'debutpause', 'pcdebutpause', 'finpause', 'pcfinpause', 'depart', 'pcdepart', 'locdepart'))
+    data = list(pointage.objects.all().values('date', 'matricule', 'agent', 'arrivee', 'locarrivee', 'debutpause', 'locdebutpause', 'finpause', 'locfinpause', 'depart', 'locdepart'))
     return JsonResponse(data, safe=False)
 
 @login_required
@@ -343,45 +342,71 @@ def export_pmois(request):
 @login_required
 def arrivee(request):
     if request.method == 'POST':
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
         dt = strftime("%d/%m/%Y", gmtime())
         mat = request.user.username
         ag = request.user.get_full_name()
         ar = strftime("%H:%M", gmtime())
-        pcar = socket.gethostname()
-        locar = socket.gethostbyname(socket.gethostname())
+        locar = ip
         if int(locar.split('.')[0])==10:
             locar = "VPN"
         else:
             locar = sites[int(locar.split('.')[2])]
-        a = pointage(date=dt, matricule=mat, agent=ag, arrivee=ar, locarrivee=locar, pcarrivee=pcar)
+        a = pointage(date=dt, matricule=mat, agent=ag, arrivee=ar, locarrivee=locar)
         a.save()
         return  HttpResponseRedirect('/')
 
 @login_required
 def depart(request, id):
     if request.method == 'POST':
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
         dep = strftime("%H:%M", gmtime())
-        pcdep = socket.gethostname()
-        locdep = socket.gethostbyname(socket.gethostname())
+        locdep = ip
         if int(locdep.split('.')[0])==10:
             locdep = "VPN"
         else:
             locdep = sites[int(locdep.split('.')[2])]
-        pointage.objects.filter(pk=id).update(depart=dep, locdepart=locdep, pcdepart=pcdep)
+        pointage.objects.filter(pk=id).update(depart=dep, locdepart=locdep)
         return  HttpResponseRedirect('/')
 
 @login_required
 def debutpause(request, id):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
     dp = strftime("%H:%M", gmtime())
-    pcdp = socket.gethostname()
-    pointage.objects.filter(pk=id).update(debutpause=dp, pcdebutpause=pcdp)
+    locdp = ip
+    if int(locdp.split('.')[0])==10:
+        locdp = "VPN"
+    else:
+        locdp = sites[int(locdp.split('.')[2])]
+    pointage.objects.filter(pk=id).update(debutpause=dp, locdebutpause=locdp)
     return  HttpResponseRedirect('/')
 
 @login_required
 def finpause(request, id):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
     fp = strftime("%H:%M", gmtime())
-    pcfp = socket.gethostname()
-    pointage.objects.filter(pk=id).update(finpause=fp, pcfinpause=pcfp)
+    locfp = ip
+    if int(locfp.split('.')[0])==10:
+        locfp = "VPN"
+    else:
+        locfp = sites[int(locfp.split('.')[2])]
+    pointage.objects.filter(pk=id).update(finpause=fp, locfinpause=locfp)
     return  HttpResponseRedirect('/')
     
 def login(request):
