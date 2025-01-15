@@ -21,9 +21,9 @@
               <th class="col-sm-2">Date</th>
               <th class="col-sm-2">Matricule</th>
               <th class="col-sm-2">Arrivée</th>
-              <th class="col-sm-2">Lieu arrivée</th>
+              <th class="col-sm-2">Début pause</th>
+              <th class="col-sm-2">Fin pause</th>
               <th class="col-sm-2">Départ</th>
-              <th class="col-sm-2">Lieu départ</th>
             </tr>
           </thead>
           <tbody>
@@ -32,9 +32,9 @@
               <td class="col-sm-2">{{p.date}}</td>
               <td class="col-sm-2"> {{p.matricule}}</td>
               <td class="col-sm-2">{{p.arrivee}}</td>
-              <td class="col-sm-2">{{p.locarrivee}}</td>
+              <td class="col-sm-2">{{p.debutpause}}</td>
+              <td class="col-sm-2">{{p.finpause}}</td>
               <td class="col-sm-2">{{p.depart}}</td>
-              <td class="col-sm-2">{{p.locdepart}}</td>
             </tr>
             {% endfor %}
           </tbody>

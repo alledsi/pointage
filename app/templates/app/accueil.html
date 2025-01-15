@@ -21,6 +21,7 @@
           </div>
           <div class="card-body">
             <p class="card-text h6">- {{statut}}</p>
+            <p class="card-text h6">- {{statutP}}</p>
           </div>
         </div>
       </div>
@@ -31,11 +32,12 @@
           </div>
           <div class="card-body">
             <p class="card-text h6">- {{statutH}}</p>
+            <p class="card-text h6">- {{statutPH}}</p>
           </div>
         </div>
       </div>
     </div>
-    &nbsp;
+    <br>
     <div class="row">
       <div class="col-sm-1"></div>
       <div class="col-sm-5">
@@ -46,6 +48,7 @@
           <div class="card-body">
             <p class="card-text h6">- {{hweek}}</p>
             <p class="card-text h6">- {{nd}}</p>
+            <i class="bi bi-info-circle-fill d-flex flex-row-reverse"><a href="{% url 'psemaine' %}" class="link-secondary link-underline-light">Détails</a></i>
           </div>
         </div>
       </div>
@@ -57,10 +60,12 @@
           <div class="card-body">
             <p class="card-text h6">- {{hmois}}</p>
             <p class="card-text h6">- {{nday}}</p>
+            <i class="bi bi-info-circle-fill d-flex flex-row-reverse"><a href="{% url 'pmois' %}" class="link-secondary link-underline-light">Détails</a></i>
           </div>
         </div>
       </div>
     </div>
+    <br>
   </div>
   <div class="col-sm-4">
     <div class="card">
@@ -79,16 +84,60 @@
         </form>
         {% endif %}
         <br>
+        <div class="d-flex flex-row">
+          {% if p and not dep %}
+            {% if dp %}
+              <div class="col-sm-6">
+                <p class="text-secondary h6">Début pause</a>
+              </div>
+            {% else %}
+            <div class="col-sm-6">
+              <a href="{% url 'debutpause' p.0.id %}" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre début de pause ?')" class="link-dark link-underline-light h6">Début pause</a>
+            </div>
+            {% endif %}
+            {% if fp %}
+              <div class="col-sm-6">
+                <p class="text-secondary h6">Fin pause</a>
+              </div>
+            {% else %}
+              {% if dp %}
+                <div class="col-sm-6">
+                  <a href="{% url 'finpause' p.0.id %}" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre fin de pause ?')" class="link-dark link-underline-light h6">Fin pause</a>
+                </div>
+              {% else %}
+                <div class="col-sm-6">
+                  <p class="text-secondary h6">Fin pause</a>
+                </div>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <br>
+          {% endif %}
+        </div>
+        <br>
         {% if dep%}
+          <br>
           <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
           <p>Déjà pointé, {{p.0.locarrivee}} !</p>
         {% else %}
           {% if p %}
-            <form action="{% url 'depart' p.0.id %}" method="post" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre départ ?');">
-              {% csrf_token %}
-                <p class="h5"><input type="submit" class="btn btn-lg btn-outline-success rounded-pill" value="Départ"></p>
-                <p>Pas encore pointé !</p>
-            </form>
+            {% if fp %}
+              <form action="{% url 'depart' p.0.id %}" method="post" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre départ ?');">
+                {% csrf_token %}
+                  <p class="h5"><input type="submit" class="btn btn-lg btn-outline-success rounded-pill" value="Départ"></p>
+                  <p>Pas encore pointé !</p>
+              </form>
+            {% elif dp %}
+              <br>
+              <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
+              <p class="text-danger">Marquez votre fin de pause d'abord !</p>
+            {% else %}
+              <form action="{% url 'depart' p.0.id %}" method="post" onclick="return confirm('Êtes-vous sûr de vouloir marquer votre départ ?');">
+                {% csrf_token %}
+                  <p class="h5"><input type="submit" class="btn btn-lg btn-outline-success rounded-pill" value="Départ"></p>
+                  <p>Pas encore pointé !</p>
+              </form>
+            {% endif %}
           {% else %}
           <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
           <p class="text-danger">Pointez votre arrivée d'abord !</p>

@@ -8,6 +8,7 @@ from time import strftime, gmtime
 import datetime
 from django.contrib.auth.decorators import login_required
 import socket
+from django.contrib.auth.models import User
 # Create your views here.
 
 sites = {
@@ -131,10 +132,13 @@ sites = {
 def accueil(request):
     mois = {1:'Janvier', 2:'Février', 3:'Mars', 4:'Avril', 5:'Mai', 6:'Juin', 7:'Juillet', 8:'Août', 9:'Septembre', 10:'Octobre', 11:'Novembre', 12:'Décembre'}
     current_dateTime = datetime.datetime.now()
-    m = mois[int(current_dateTime.strftime("%m"))].capitalize()
+    #m = mois[int(current_dateTime.strftime("%m"))].capitalize()
+    m = mois[int(strftime('%m', gmtime()))].capitalize()
+    y = strftime('%Y', gmtime())
     jour = {0:'Dimanche', 1:'Lundi', 2:'Mardi', 3:'Mercredi', 4:'Jeudi', 5:'Vendredi', 6:'Samedi'}
-    j = jour[int(current_dateTime.strftime("%w"))].capitalize()
-    y = current_dateTime.strftime("%Y")
+    #j = jour[int(current_dateTime.strftime("%w"))].capitalize()
+    j = jour[int(strftime('%w', gmtime()))].capitalize()
+    #y = current_dateTime.strftime("%Y")
     dn = str(j)+" "+strftime('%d', gmtime())+" "+str(m)+" "+str(y)
     hm = strftime("%H:%M", gmtime())
     p = pointage.objects.filter(date__exact=strftime("%d/%m/%Y", gmtime()), matricule__exact=request.user.username)
@@ -187,29 +191,46 @@ def accueil(request):
     hmois = str(hmois[0])+":"+str(hmois[1])+" de présence"
     nday = str(nday)+" jours" if nday>1 else str(nday)+" jour"
     
+    dp = None
+    fp = None
+    statutP = "Aucune pause"
     dep = None
     statut = "Aucun pointage"
     if len(p[:1])!=0:
         dep = p[0].depart
         arr = p[0].arrivee
-        timeref = datetime.time(8, 1)
+        dp = p[0].debutpause
+        fp = p[0].finpause
+        timeref = datetime.time(8, 0)
         timepoint = datetime.time(int(arr.split(":")[0]), int(arr.split(":")[1]))
         statut = "A l'heure: "+str(arr) if timeref > timepoint else "En retard: "+str(arr)
+        if dp is not None and fp is not None:
+            statutP = "Pause: "+str(dp)+" à "+str(fp)
+        elif dp is not None:
+            statutP = "Début pause: "+str(dp)
         if dep is not None:
             statut = "Présent: "+str(arr)+" à "+str(dep)
     
+    dpH = None
+    fpH = None
+    statutPH = "Aucune pause"
     depH = None
     statutH = "Aucun pointage"
     if len(pH[:1])!=0:
         depH = pH[0].depart
         arrH = pH[0].arrivee
-        timeref = datetime.time(8, 1)
+        dpH = pH[0].debutpause
+        fpH = pH[0].finpause
+        timeref = datetime.time(8, 0)
         timepoint = datetime.time(int(arrH.split(":")[0]), int(arrH.split(":")[1]))
         statutH = "A l'heure: "+str(arrH) if timeref > timepoint else "En retard: "+str(arrH)
+        if dpH is not None and fpH is not None:
+            statutPH = "Pause: "+str(dpH)+" à "+str(fpH)
+        elif dpH is not None:
+            statutPH = "Début pause: "+str(dp)
         if depH is not None:
             statutH = "Présent: "+str(arrH)+" à "+str(depH)
-    
-    return render(request, 'app/accueil.html' ,{'d': dn, 'p': p, 'dep': dep, 'hm': hm, 'statut': statut, 'statutH': statutH, 'hweek': hweek, 'nd': nd, 'hmois': hmois, 'nday': nday})
+    return render(request, 'app/accueil.html' ,{'d': dn, 'p': p, 'dep': dep, 'hm': hm, 'statut': statut, 'statutH': statutH, 'statutP': statutP, 'statutPH': statutPH, 'hweek': hweek, 'nd': nd, 'hmois': hmois, 'nday': nday, 'dp': dp, 'fp': fp})
 
 @login_required
 def pannee(request):
@@ -255,27 +276,13 @@ def psemaine(request):
         pisplit = p.date.split("/")
         #print(datetime.datetime(int(pisplit[2]), int(pisplit[1]), int(pisplit[0])).strftime("%W"))
         if datetime.datetime(int(pisplit[2]), int(pisplit[1]), int(pisplit[0])).strftime("%W") == strftime("%W", gmtime()):
-            l = [p.date, p.matricule, p.arrivee, p.locarrivee, p.depart, p.locdepart]
+            l = [p.date, p.matricule, p.arrivee, p.debutpause, p.finpause, p.depart]
             ps.append(l)
     return render(request, 'app/p_semaine.html', {'ps': ps, 'd': dn, 'hm': hm})
 
 def json_pointage(request):
-    data = list(pointage.objects.all().values('date', 'matricule', 'agent', 'arrivee', 'locarrivee', 'depart', 'locdepart'))
+    data = list(pointage.objects.all().values('date', 'matricule', 'agent', 'arrivee', 'pcarrivee', 'locarrivee', 'debutpause', 'pcdebutpause', 'finpause', 'pcfinpause', 'depart', 'pcdepart', 'locdepart'))
     return JsonResponse(data, safe=False)
-
-def login(request):
-    msg = ""
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = auth.authenticate(username=username, password=password)
-        if user is not None:
-            auth.login(request, user)
-            return redirect('/')
-        else:
-            messages.error(request, 'Username ou password incorrect')
-            msg = "Nom d'utilisateur ou mot de passe incorrect."
-    return render(request, 'app/login.html', {'form': LoginForm, 'msg':msg})
 
 @login_required
 def export_pannee(request):
@@ -289,14 +296,14 @@ def export_pannee(request):
 
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
-    columns = ['Date', 'Matricule', 'Arrivée', 'Lieu arrivée', 'Départ', 'Lieu départ']
+    columns = ['Date', 'Matricule', 'Arrivée', 'Début pause', 'Fin pause', 'Départ']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
 
     font_style = xlwt.XFStyle()
 
-    rows = pointage.objects.filter(date__endswith=strftime("%Y", gmtime()), matricule__exact=request.user.username).values_list('date', 'matricule', 'arrivee', 'locarrivee', 'depart', 'locdepart')
+    rows = pointage.objects.filter(date__endswith=strftime("%Y", gmtime()), matricule__exact=request.user.username).values_list('date', 'matricule', 'arrivee', 'debutpause', 'finpause', 'depart')
     for row in rows:
         row_num += 1
         for col_num in range(len(row)):
@@ -317,14 +324,14 @@ def export_pmois(request):
 
     font_style = xlwt.XFStyle()
     font_style.font.bold = True
-    columns = ['Date', 'Matricule', 'Arrivée', 'Lieu arrivée', 'Départ', 'Lieu départ']
+    columns = ['Date', 'Matricule', 'Arrivée', 'Début pause', 'Fin pause', 'Départ']
 
     for col_num in range(len(columns)):
         ws.write(row_num, col_num, columns[col_num], font_style)
 
     font_style = xlwt.XFStyle()
 
-    rows = pointage.objects.filter(date__endswith=strftime("%m/%Y", gmtime()), matricule__exact=request.user.username).values_list('date', 'matricule', 'arrivee', 'locarrivee', 'depart', 'locdepart')
+    rows = pointage.objects.filter(date__endswith=strftime("%m/%Y", gmtime()), matricule__exact=request.user.username).values_list('date', 'matricule', 'arrivee', 'debutpause', 'finpause', 'depart')
     for row in rows:
         row_num += 1
         for col_num in range(len(row)):
@@ -333,11 +340,6 @@ def export_pmois(request):
     wb.save(response)
     return response
 
-def logout(request):
-    auth.logout(request)
-    messages.info(request, 'Déconnecté !')
-    return redirect('/login')
-
 @login_required
 def arrivee(request):
     if request.method == 'POST':
@@ -345,12 +347,13 @@ def arrivee(request):
         mat = request.user.username
         ag = request.user.get_full_name()
         ar = strftime("%H:%M", gmtime())
+        pcar = socket.gethostname()
         locar = socket.gethostbyname(socket.gethostname())
         if int(locar.split('.')[0])==10:
             locar = "VPN"
         else:
             locar = sites[int(locar.split('.')[2])]
-        a = pointage(date=dt, matricule=mat, agent=ag, arrivee=ar, locarrivee=locar)
+        a = pointage(date=dt, matricule=mat, agent=ag, arrivee=ar, locarrivee=locar, pcarrivee=pcar)
         a.save()
         return  HttpResponseRedirect('/')
 
@@ -358,10 +361,44 @@ def arrivee(request):
 def depart(request, id):
     if request.method == 'POST':
         dep = strftime("%H:%M", gmtime())
+        pcdep = socket.gethostname()
         locdep = socket.gethostbyname(socket.gethostname())
         if int(locdep.split('.')[0])==10:
             locdep = "VPN"
         else:
             locdep = sites[int(locdep.split('.')[2])]
-        pointage.objects.filter(pk=id).update(depart=dep, locdepart=locdep)
+        pointage.objects.filter(pk=id).update(depart=dep, locdepart=locdep, pcdepart=pcdep)
         return  HttpResponseRedirect('/')
+
+@login_required
+def debutpause(request, id):
+    dp = strftime("%H:%M", gmtime())
+    pcdp = socket.gethostname()
+    pointage.objects.filter(pk=id).update(debutpause=dp, pcdebutpause=pcdp)
+    return  HttpResponseRedirect('/')
+
+@login_required
+def finpause(request, id):
+    fp = strftime("%H:%M", gmtime())
+    pcfp = socket.gethostname()
+    pointage.objects.filter(pk=id).update(finpause=fp, pcfinpause=pcfp)
+    return  HttpResponseRedirect('/')
+    
+def login(request):
+    msg = ""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = auth.authenticate(username=username, password=password)
+        if user is not None:
+            auth.login(request, user)
+            return redirect('/')
+        else:
+            messages.error(request, 'Username ou password incorrect')
+            msg = "Nom d'utilisateur ou mot de passe incorrect."
+    return render(request, 'app/login.html', {'form': LoginForm, 'msg':msg})
+
+def logout(request):
+    auth.logout(request)
+    messages.info(request, 'Déconnecté !')
+    return redirect('/login')
