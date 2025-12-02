@@ -47,9 +47,9 @@ sites = {
     162 : "AGENCE Rufisque",
     103 : "Rufisque",
     12  : "Poste Thiaroye",
-    19  : "Keur Massar",
     160 : "Bayakh",
     161 : "Diamniadio",
+    151 : "Keur Massar",
 
     23 :  "AGENCE KAOALACK",
     22 :  "Sokone / Passy",

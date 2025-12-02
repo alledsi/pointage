@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path
 from app import views
 
@@ -33,5 +34,12 @@ urlpatterns = [
     path('export_pannee', views.export_pannee, name="export_pannee"),
     path('export_pmois', views.export_pmois, name="export_pmois"),
     path('api/v1/pointage/app/all', views.json_pointage, name="json_pointage"),
+    path('accounts/password_change/',
+                 auth_views.PasswordChangeView.as_view(
+                     #template_name='registration/password_change.html',  # Optionnel : pour utiliser un template personnalisé
+                     success_url='/logout' # Optionnel : pour rediriger après le changement
+                 ),
+                 name='password_change'),
+    #path('accounts/password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'), # Optionnel : page de succès
 
 ]
