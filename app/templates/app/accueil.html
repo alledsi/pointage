@@ -117,7 +117,7 @@
         <br>
         {% if dep%}
           <br>
-          <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill disabled"><p class="h5">Départ</p></button>&nbsp;&nbsp;<a class="navbar-brand" href="{% url 'annulerdepart' p.0.id %}"><p class="btn btn-danger rounded-pill h3">Annuler départ</p></a>
           <p>Déjà pointé, {{p.0.locarrivee}} !</p>
         {% else %}
           {% if p %}

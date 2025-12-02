@@ -47,7 +47,7 @@ sites = {
     162 : "AGENCE Rufisque",
     103 : "Rufisque",
     12  : "Poste Thiaroye",
-    160 : "Bayakh",
+    96  : "Bayakh",
     161 : "Diamniadio",
     151 : "Keur Massar",
 
@@ -76,7 +76,7 @@ sites = {
 
     57  : "AGENCE Saint Louis",
     52  : "Richard Toll",
-    53  : "Saint Louis II (Pikine)",
+    59  : "Saint Louis II (Pikine)",
     56  : "Santhiaba",
     50  : "Ngalèle",
 
@@ -85,7 +85,7 @@ sites = {
     54  : "Kébémer",
     55  : "Dahra",
     58  : "Louga Artillerie",
-    59  : "Niomré",
+    53  : "Niomré",
 
     60  : "AGENCE Diourbel",
     62  : "Bambey",
@@ -123,7 +123,7 @@ sites = {
     98  : "AGENCE TIVAOUANE",
     91  : "Tivaouane",
     95  : "Mboro",
-    96  : "Mékhé",
+    160 : "Mékhé",
 
 }
 
@@ -377,6 +377,11 @@ def depart(request, id):
             locdep = sites[int(locdep.split('.')[2])]
         pointage.objects.filter(pk=id).update(depart=dep, locdepart=locdep)
         return  HttpResponseRedirect('/')
+
+@login_required
+def annulerdepart(request, id):
+    pointage.objects.filter(pk=id).update(depart=None, locdepart=None)
+    return  HttpResponseRedirect('/')
 
 @login_required
 def debutpause(request, id):

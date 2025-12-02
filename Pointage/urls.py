@@ -26,6 +26,7 @@ urlpatterns = [
     path('logout', views.logout, name="logout"),
     path('arrivee', views.arrivee, name="arrivee"),
     path('depart/<int:id>', views.depart, name="depart"),
+    path('annulerdepart/<int:id>', views.annulerdepart, name="annulerdepart"),
     path('pause/debut/<int:id>', views.debutpause, name="debutpause"),
     path('pause/fin/<int:id>', views.finpause, name="finpause"),
     path('annee', views.pannee, name="pannee"),
